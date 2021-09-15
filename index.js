@@ -1,5 +1,15 @@
 require("dotenv").config();
 const JWT = require("jsonwebtoken");
+const express = require("express");
+const { urlencoded } = require("express");
+const app = express();
+
+/**
+ * Express va recupérer du Json
+ * urlencoded pour la bonne gestion des accents
+ */
+app.use(express.json());
+app.use(urlencoded({ extended: true }));
 
 // creation d'un user pour l'authentification,
 /**
