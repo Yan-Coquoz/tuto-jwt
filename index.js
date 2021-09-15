@@ -35,7 +35,7 @@ const user = {
 
 function tokenAccess(user) {
   // donne un token à l'utilisateur, la clé secrete, et la duré d'expiration en secondes (1800 s = 30 min)
-  return JWT.sign(user, process.env.JWT_SECRET, { expiresIn: "1800" });
+  return JWT.sign(user, process.env.JWT_SECRET, { expiresIn: 1800 }); //! attention pas un string
 }
 // // on stock la valeur du token
 // const accessToken = tokenAccess(user);
@@ -53,6 +53,7 @@ app.post("/api/login", (req, res) => {
     return;
   }
   if (req.body.password !== "MDPmotdepasse") {
+    // 401 unauthorized (non autorisé)
     res.status(401).send("invalid credentials");
     // on return pour stoppé le proccess
     return;
@@ -62,6 +63,40 @@ app.post("/api/login", (req, res) => {
   res.status(200).send({
     accessToken,
   });
+});
+
+//* authentification des routes, voir si les routes avec jwt est correct.
+// creation d'un middleware
+function authentiKToken(req, res, next) {
+  // recupération de l'autorisation depuis le header
+  const authHeader = req.headers["authorization"];
+  // on check si il n'est pas null et on recuppere la seconde valeur de la chaine de caractere
+  // du client => header => "bearer  leToken"  <= Convention de nommage
+  // on coupe la chaine en 2 au niveau de l'espace et on prend la valeur à l'indice 1
+  const token = authHeader && authHeader.split(" ")[1];
+
+  // on check si le token correspond
+  if (!token) {
+    return res.sendStatus(401);
+  }
+  console.log("token 82 => ", token);
+
+  JWT.verify(token, process.env.JWT_SECRET, (err, datas) => {
+    if (err) {
+      console.log("datas 86 => ", datas);
+      return res.status(401).json({ message: err });
+    }
+    console.log("datas 89 => ", datas);
+    // nos routes auront la data du user, chaque route aura les données décodé du user!
+    req.user = datas;
+    next();
+  });
+}
+// utilisation d'une route pour utiliser le middleware.
+app.get("/api/moi", authentiKToken, (req, res) => {
+  console.log(req.user);
+  // on affiche le user
+  res.send(req.user);
 });
 
 app.listen(PORT, () => {
