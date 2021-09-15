@@ -42,7 +42,8 @@ function tokenAccess(user) {
 // // Ce token contient toutes les infos de l'objet user
 // console.log("Le token crypté : ", accessToken);
 
-// Les routes
+// Les routes à tester avec insomnia ou autre
+// ne pas oublieer de renseigner le body en json pour l'acceptation des données
 
 app.post("/api/login", (req, res) => {
   // On check la recuperation des données
@@ -58,7 +59,7 @@ app.post("/api/login", (req, res) => {
   }
   // si c'est bon on génère l'accessToken
   const accessToken = tokenAccess(user);
-  res.send({
+  res.status(200).send({
     accessToken,
   });
 });
