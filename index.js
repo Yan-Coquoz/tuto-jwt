@@ -35,7 +35,11 @@ const user = {
 
 function tokenAccess(user) {
   // donne un token à l'utilisateur, la clé secrete, et la duré d'expiration en secondes (1800 s = 30 min)
-  return JWT.sign(user, process.env.JWT_SECRET, { expiresIn: 1800 }); //! attention pas un string
+  return JWT.sign(user, process.env.JWT_SECRET, { expiresIn: "1800s" }); //! attention ne pas oublier la valeur du temps(s)
+}
+// le refresh token au cas
+function tokenRefreshAccess(user) {
+  return JWT.sign(user, process.env.JWT_REFRESH, { expiresIn: "1y" });
 }
 // // on stock la valeur du token
 // const accessToken = tokenAccess(user);
@@ -60,11 +64,41 @@ app.post("/api/login", (req, res) => {
   }
   // si c'est bon on génère l'accessToken
   const accessToken = tokenAccess(user);
+  const refreshToken = tokenRefreshAccess(user);
   res.status(200).send({
+    // on génére un accessToken et un refreshToken
     accessToken,
+    refreshToken,
   });
 });
 
+// route pour le refresh
+app.post("/api/refreshToken", (req, res) => {
+  // on reccupere le token comme dans le middleware
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.sendStatus(401);
+  }
+
+  // on utilise le refresh
+  JWT.verify(token, process.env.JWT_REFRESH, (err, datas) => {
+    if (err) {
+      console.log("datas 87 => ", datas);
+      return res.status(401).json({ message: err });
+    }
+    // TODO on check en BDD si le user à toujours les droits et qu'il existe toujours
+    // lors de la regeneration on supprime les veilles valeurs de creation et d'expiration du token
+    delete user.iat;
+    delete user.exp;
+    // on crée un nouveau token refresh
+    const refreshedToken = tokenAccess(user);
+    res.send({
+      accessToken: refreshedToken,
+    });
+  });
+});
 //* authentification des routes, voir si les routes avec jwt est correct.
 // creation d'un middleware
 function authentiKToken(req, res, next) {
