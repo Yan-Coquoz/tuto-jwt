@@ -25,6 +25,7 @@ const user = {
   lastname: "Garros",
   age: 32,
   email: "rg@tennis.fr",
+  gender: "Hobbit",
   admin: true,
 };
 

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "fake": "node fake-axios-client.js"
   },
   "author": "",
   "license": "ISC",
@@ -15,6 +15,7 @@
     "jsonwebtoken": "^8.5.1"
   },
   "devDependencies": {
+    "axios": "^0.21.4",
     "nodemon": "^2.0.12"
   }
 }
